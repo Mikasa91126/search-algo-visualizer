@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="二分查找逐步可视化：观察 low、mid、high 指针如何移动，以及查找区间如何折半收缩。">
+  <title>二分查找可视化 · 搜索算法学习工具</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="page">
+    <!-- 顶部标题栏：项目名称与本阶段说明 -->
+    <header class="masthead">
+      <div class="masthead-main">
+        <p class="kicker">搜索算法可视化学习工具</p>
+        <h1>二分查找<span class="title-mark" aria-hidden="true">/</span>逐步演示</h1>
+        <p class="lede">看查找区间如何一次次折半，直到命中目标，或者彻底落空。</p>
+      </div>
+      <div class="masthead-meta">
+        <p><span>项目</span>二分查找 vs 哈希查找</p>
+        <p><span>进度</span>第一阶段 · 二分查找</p>
+        <p><span>运行</span>纯原生页面 · 双击即用</p>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <!-- 左侧控制区：数据规模、目标值、播放速度 -->
+      <aside class="controls" aria-labelledby="controls-title">
+        <div class="section-heading">
+          <h2 id="controls-title">演示设置</h2>
+          <span class="sorted-badge">已排序 · 升序</span>
+        </div>
+
+        <div class="field">
+          <div class="field-head">
+            <label for="size">数组规模</label>
+            <output id="size-value" for="size">16</output>
+          </div>
+          <input id="size" class="range" type="range" min="8" max="128" step="1" value="16"
+                 aria-describedby="size-hint">
+          <p id="size-hint" class="hint">8–128 个互不相同的整数，生成后自动升序排列。</p>
+        </div>
+
+        <div class="field">
+          <label for="target">目标值</label>
+          <div class="target-row">
+            <input id="target" type="number" step="1" inputmode="numeric"
+                   aria-describedby="target-hint">
+            <button id="random-target" class="btn btn-quiet" type="button">随机目标</button>
+          </div>
+          <p id="target-hint" class="hint">输入任意整数；也可以输入数组中不存在的值，观察查找失败的过程。</p>
+        </div>
+
+        <div class="field">
+          <span class="field-label">播放速度</span>
+          <div class="segmented" id="speed-group" role="group" aria-label="播放速度">
+            <button type="button" data-speed="1200" aria-pressed="false">慢</button>
+            <button type="button" data-speed="700" class="is-selected" aria-pressed="true">正常</button>
+            <button type="button" data-speed="350" aria-pressed="false">快</button>
+          </div>
+        </div>
+
+        <div class="side-actions">
+          <button id="regenerate" class="btn btn-outline" type="button">换一组数据</button>
+          <button id="reset" class="btn btn-outline" type="button">重置演示</button>
+        </div>
+
+        <div class="shortcuts">
+          <h3>键盘快捷键</h3>
+          <p><kbd>空格</kbd> 播放 / 暂停</p>
+          <p><kbd>←</kbd><kbd>→</kbd> 单步前后</p>
+          <p><kbd>R</kbd> 重置</p>
+        </div>
+      </aside>
+
+      <!-- 中部主区域：数组、指针、状态与播放控制 -->
+      <section class="stage-column" aria-labelledby="stage-title">
+        <div class="stage">
+          <div class="stage-heading">
+            <div>
+              <h2 id="stage-title">二分查找</h2>
+              <p class="stage-sub">比较中点，丢弃一半，再比较中点。</p>
+            </div>
+            <p class="formula" aria-label="中间位置的计算公式">mid = low + ⌊(high − low) / 2⌋</p>
+          </div>
+
+          <div class="array-frame">
+            <div class="array-caption">
+              <span>数组 A<em>升序</em></span>
+              <span id="array-meta">n = 16</span>
+              <span class="target-meta">目标 <b id="target-meta">–</b></span>
+            </div>
+            <div id="array-viewport" class="array-viewport" tabindex="0" role="group" aria-label="可横向滚动的数组区域">
+              <div id="array-track" class="array-track" role="list" aria-label="有序数组"></div>
+            </div>
+          </div>
+
+          <div id="status-panel" class="status-panel" data-tone="idle">
+            <span class="status-dot" aria-hidden="true"></span>
+            <p id="status-message" role="status" aria-live="polite">正在准备数组…</p>
+            <span id="status-count" class="status-count">比较 0 次</span>
+          </div>
+
+          <div class="transport">
+            <div class="transport-actions">
+              <button id="prev" class="btn btn-outline" type="button" disabled>上一步</button>
+              <button id="step" class="btn btn-outline" type="button">单步</button>
+              <button id="play" class="btn btn-primary" type="button" aria-pressed="false">播放</button>
+            </div>
+            <p class="transport-meta">
+              <span>第 <b id="step-counter">1 / 1</b> 步</span>
+              <span>区间 <b id="interval-readout">[0, 15]</b></span>
+            </p>
+          </div>
+          <div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
+        </div>
+
+        <div class="lower-grid">
+          <!-- 状态说明区：本次查找的量化结果 -->
+          <section class="stats" aria-labelledby="stats-title">
+            <div class="section-heading">
+              <h2 id="stats-title">本次统计</h2>
+              <span id="stat-verdict" class="verdict">准备就绪</span>
+            </div>
+            <dl class="stat-list">
+              <div>
+                <dt>比较次数</dt>
+                <dd id="stat-comparisons">0</dd>
+              </div>
+              <div>
+                <dt>区间剩余</dt>
+                <dd id="stat-remaining">16</dd>
+              </div>
+              <div>
+                <dt>理论最多比较</dt>
+                <dd id="stat-theoretical">5</dd>
+              </div>
+              <div>
+                <dt>查找结果</dt>
+                <dd id="stat-result">—</dd>
+              </div>
+            </dl>
+          </section>
+
+          <!-- 时间线：每一步都可点击回看 -->
+          <section class="trace" aria-labelledby="trace-title">
+            <div class="section-heading">
+              <h2 id="trace-title">查找轨迹</h2>
+              <span id="trace-count" class="trace-count">共 1 步</span>
+            </div>
+            <ol id="trace-list" class="trace-list" aria-label="二分查找步骤列表"></ol>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <footer class="page-footer">
+      <span>纯 HTML / CSS / JavaScript · 无外部依赖</span>
+      <span>数组下标从 0 开始 · 目标不存在时 low 会越过 high</span>
+    </footer>
+  </div>
+
+  <!-- 按依赖顺序加载普通脚本，保证双击 index.html 即可运行（无需本地服务器） -->
+  <script src="js/binary-search.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/stats.js"></script>
+  <script src="js/controls.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
