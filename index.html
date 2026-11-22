@@ -3,152 +3,356 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="二分查找逐步可视化：观察 low、mid、high 指针如何移动，以及查找区间如何折半收缩。">
+  <meta name="description" content="搜索算法可视化学习工具：逐步观察二分查找的区间折半，以及哈希表（取模哈希 + 链地址法）的建表、冲突与查找过程。">
   <title>二分查找可视化 · 搜索算法学习工具</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body data-active-view="binary">
   <div class="page">
     <!-- 顶部标题栏：项目名称与本阶段说明 -->
     <header class="masthead">
       <div class="masthead-main">
         <p class="kicker">搜索算法可视化学习工具</p>
-        <h1>二分查找<span class="title-mark" aria-hidden="true">/</span>逐步演示</h1>
-        <p class="lede">看查找区间如何一次次折半，直到命中目标，或者彻底落空。</p>
+        <h1><span id="masthead-title">二分查找</span><span class="title-mark" aria-hidden="true">/</span>逐步演示</h1>
+        <p id="masthead-lede" class="lede">看查找区间如何一次次折半，直到命中目标，或者彻底落空。</p>
       </div>
       <div class="masthead-meta">
         <p><span>项目</span>二分查找 vs 哈希查找</p>
-        <p><span>进度</span>第一阶段 · 二分查找</p>
+        <p><span>进度</span>第二阶段 · 二分查找 + 哈希查找</p>
         <p><span>运行</span>纯原生页面 · 双击即用</p>
       </div>
     </header>
 
-    <main class="workspace">
-      <!-- 左侧控制区：数据规模、目标值、播放速度 -->
-      <aside class="controls" aria-labelledby="controls-title">
-        <div class="section-heading">
-          <h2 id="controls-title">演示设置</h2>
-          <span class="sorted-badge">已排序 · 升序</span>
-        </div>
+    <!-- 模块标签页：切换二分查找 / 哈希查找 -->
+    <nav class="view-tabs" role="tablist" aria-label="演示模块">
+      <button id="tab-binary" class="view-tab is-active" type="button" role="tab"
+              aria-selected="true" aria-controls="view-binary" data-view="binary">
+        <span class="view-tab-no" aria-hidden="true">01</span>
+        <span class="view-tab-body">
+          <span class="view-tab-label">二分查找</span>
+          <span class="view-tab-note">有序数组 · 区间折半</span>
+        </span>
+      </button>
+      <button id="tab-hash" class="view-tab" type="button" role="tab"
+              aria-selected="false" aria-controls="view-hash" data-view="hash" tabindex="-1">
+        <span class="view-tab-no" aria-hidden="true">02</span>
+        <span class="view-tab-body">
+          <span class="view-tab-label">哈希查找</span>
+          <span class="view-tab-note">取模定位 · 链地址法</span>
+        </span>
+      </button>
+    </nav>
 
-        <div class="field">
-          <div class="field-head">
-            <label for="size">数组规模</label>
-            <output id="size-value" for="size">16</output>
-          </div>
-          <input id="size" class="range" type="range" min="8" max="128" step="1" value="16"
-                 aria-describedby="size-hint">
-          <p id="size-hint" class="hint">8–128 个互不相同的整数，生成后自动升序排列。</p>
-        </div>
-
-        <div class="field">
-          <label for="target">目标值</label>
-          <div class="target-row">
-            <input id="target" type="number" step="1" inputmode="numeric"
-                   aria-describedby="target-hint">
-            <button id="random-target" class="btn btn-quiet" type="button">随机目标</button>
-          </div>
-          <p id="target-hint" class="hint">输入任意整数；也可以输入数组中不存在的值，观察查找失败的过程。</p>
-        </div>
-
-        <div class="field">
-          <span class="field-label">播放速度</span>
-          <div class="segmented" id="speed-group" role="group" aria-label="播放速度">
-            <button type="button" data-speed="1200" aria-pressed="false">慢</button>
-            <button type="button" data-speed="700" class="is-selected" aria-pressed="true">正常</button>
-            <button type="button" data-speed="350" aria-pressed="false">快</button>
-          </div>
-        </div>
-
-        <div class="side-actions">
-          <button id="regenerate" class="btn btn-outline" type="button">换一组数据</button>
-          <button id="reset" class="btn btn-outline" type="button">重置演示</button>
-        </div>
-
-        <div class="shortcuts">
-          <h3>键盘快捷键</h3>
-          <p><kbd>空格</kbd> 播放 / 暂停</p>
-          <p><kbd>←</kbd><kbd>→</kbd> 单步前后</p>
-          <p><kbd>R</kbd> 重置</p>
-        </div>
-      </aside>
-
-      <!-- 中部主区域：数组、指针、状态与播放控制 -->
-      <section class="stage-column" aria-labelledby="stage-title">
-        <div class="stage">
-          <div class="stage-heading">
-            <div>
-              <h2 id="stage-title">二分查找</h2>
-              <p class="stage-sub">比较中点，丢弃一半，再比较中点。</p>
-            </div>
-            <p class="formula" aria-label="中间位置的计算公式">mid = low + ⌊(high − low) / 2⌋</p>
-          </div>
-
-          <div class="array-frame">
-            <div class="array-caption">
-              <span>数组 A<em>升序</em></span>
-              <span id="array-meta">n = 16</span>
-              <span class="target-meta">目标 <b id="target-meta">–</b></span>
-            </div>
-            <div id="array-viewport" class="array-viewport" tabindex="0" role="group" aria-label="可横向滚动的数组区域">
-              <div id="array-track" class="array-track" role="list" aria-label="有序数组"></div>
-            </div>
-          </div>
-
-          <div id="status-panel" class="status-panel" data-tone="idle">
-            <span class="status-dot" aria-hidden="true"></span>
-            <p id="status-message" role="status" aria-live="polite">正在准备数组…</p>
-            <span id="status-count" class="status-count">比较 0 次</span>
-          </div>
-
-          <div class="transport">
-            <div class="transport-actions">
-              <button id="prev" class="btn btn-outline" type="button" disabled>上一步</button>
-              <button id="step" class="btn btn-outline" type="button">单步</button>
-              <button id="play" class="btn btn-primary" type="button" aria-pressed="false">播放</button>
-            </div>
-            <p class="transport-meta">
-              <span>第 <b id="step-counter">1 / 1</b> 步</span>
-              <span>区间 <b id="interval-readout">[0, 15]</b></span>
-            </p>
-          </div>
-          <div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
-        </div>
-
-        <div class="lower-grid">
-          <!-- 状态说明区：本次查找的量化结果 -->
-          <section class="stats" aria-labelledby="stats-title">
+    <main class="views">
+      <!-- ================= 二分查找 ================= -->
+      <section id="view-binary" class="view-panel" role="tabpanel" aria-labelledby="tab-binary"
+               data-view="binary">
+        <div class="workspace">
+          <!-- 左侧控制区：数据规模、目标值、播放速度 -->
+          <aside class="controls" aria-labelledby="controls-title">
             <div class="section-heading">
-              <h2 id="stats-title">本次统计</h2>
-              <span id="stat-verdict" class="verdict">准备就绪</span>
+              <h2 id="controls-title">演示设置</h2>
+              <span class="sorted-badge">已排序 · 升序</span>
             </div>
-            <dl class="stat-list">
-              <div>
-                <dt>比较次数</dt>
-                <dd id="stat-comparisons">0</dd>
+
+            <div class="field">
+              <div class="field-head">
+                <label for="size">数组规模</label>
+                <output id="size-value" for="size">16</output>
               </div>
-              <div>
-                <dt>区间剩余</dt>
-                <dd id="stat-remaining">16</dd>
+              <input id="size" class="range" type="range" min="8" max="128" step="1" value="16"
+                     aria-describedby="size-hint">
+              <p id="size-hint" class="hint">8–128 个互不相同的整数，生成后自动升序排列。</p>
+            </div>
+
+            <div class="field">
+              <label for="target">目标值</label>
+              <div class="target-row">
+                <input id="target" type="number" step="1" inputmode="numeric"
+                       aria-describedby="target-hint">
+                <button id="random-target" class="btn btn-quiet" type="button">随机目标</button>
               </div>
-              <div>
-                <dt>理论最多比较</dt>
-                <dd id="stat-theoretical">5</dd>
+              <p id="target-hint" class="hint">输入任意整数；也可以输入数组中不存在的值，观察查找失败的过程。</p>
+            </div>
+
+            <div class="field">
+              <span class="field-label">播放速度</span>
+              <div class="segmented" id="speed-group" role="group" aria-label="播放速度">
+                <button type="button" data-speed="1200" aria-pressed="false">慢</button>
+                <button type="button" data-speed="700" class="is-selected" aria-pressed="true">正常</button>
+                <button type="button" data-speed="350" aria-pressed="false">快</button>
               </div>
-              <div>
-                <dt>查找结果</dt>
-                <dd id="stat-result">—</dd>
+            </div>
+
+            <div class="side-actions">
+              <button id="regenerate" class="btn btn-outline" type="button">换一组数据</button>
+              <button id="reset" class="btn btn-outline" type="button">重置演示</button>
+            </div>
+
+            <div class="shortcuts">
+              <h3>键盘快捷键</h3>
+              <p><kbd>空格</kbd> 播放 / 暂停</p>
+              <p><kbd>←</kbd><kbd>→</kbd> 单步前后</p>
+              <p><kbd>R</kbd> 重置</p>
+            </div>
+          </aside>
+
+          <!-- 中部主区域：数组、指针、状态与播放控制 -->
+          <section class="stage-column" aria-labelledby="stage-title">
+            <div class="stage">
+              <div class="stage-heading">
+                <div>
+                  <h2 id="stage-title">二分查找</h2>
+                  <p class="stage-sub">比较中点，丢弃一半，再比较中点。</p>
+                </div>
+                <p class="formula" aria-label="中间位置的计算公式">mid = low + ⌊(high − low) / 2⌋</p>
               </div>
-            </dl>
+
+              <div class="array-frame">
+                <div class="array-caption">
+                  <span>数组 A<em>升序</em></span>
+                  <span id="array-meta">n = 16</span>
+                  <span class="target-meta">目标 <b id="target-meta">–</b></span>
+                </div>
+                <div id="array-viewport" class="array-viewport" tabindex="0" role="group" aria-label="可横向滚动的数组区域">
+                  <div id="array-track" class="array-track" role="list" aria-label="有序数组"></div>
+                </div>
+              </div>
+
+              <div id="status-panel" class="status-panel" data-tone="idle">
+                <span class="status-dot" aria-hidden="true"></span>
+                <p id="status-message" role="status" aria-live="polite">正在准备数组…</p>
+                <span id="status-count" class="status-count">比较 0 次</span>
+              </div>
+
+              <div class="transport">
+                <div class="transport-actions">
+                  <button id="prev" class="btn btn-outline" type="button" disabled>上一步</button>
+                  <button id="step" class="btn btn-outline" type="button">单步</button>
+                  <button id="play" class="btn btn-primary" type="button" aria-pressed="false">播放</button>
+                </div>
+                <p class="transport-meta">
+                  <span>第 <b id="step-counter">1 / 1</b> 步</span>
+                  <span>区间 <b id="interval-readout">[0, 15]</b></span>
+                </p>
+              </div>
+              <div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
+            </div>
+
+            <div class="lower-grid">
+              <!-- 状态说明区：本次查找的量化结果 -->
+              <section class="stats" aria-labelledby="stats-title">
+                <div class="section-heading">
+                  <h2 id="stats-title">本次统计</h2>
+                  <span id="stat-verdict" class="verdict">准备就绪</span>
+                </div>
+                <dl class="stat-list">
+                  <div>
+                    <dt>比较次数</dt>
+                    <dd id="stat-comparisons">0</dd>
+                  </div>
+                  <div>
+                    <dt>区间剩余</dt>
+                    <dd id="stat-remaining">16</dd>
+                  </div>
+                  <div>
+                    <dt>理论最多比较</dt>
+                    <dd id="stat-theoretical">5</dd>
+                  </div>
+                  <div>
+                    <dt>查找结果</dt>
+                    <dd id="stat-result">—</dd>
+                  </div>
+                </dl>
+              </section>
+
+              <!-- 时间线：每一步都可点击回看 -->
+              <section class="trace" aria-labelledby="trace-title">
+                <div class="section-heading">
+                  <h2 id="trace-title">查找轨迹</h2>
+                  <span id="trace-count" class="trace-count">共 1 步</span>
+                </div>
+                <ol id="trace-list" class="trace-list" aria-label="二分查找步骤列表"></ol>
+              </section>
+            </div>
           </section>
+        </div>
+      </section>
 
-          <!-- 时间线：每一步都可点击回看 -->
-          <section class="trace" aria-labelledby="trace-title">
+      <!-- ================= 哈希查找 ================= -->
+      <section id="view-hash" class="view-panel" role="tabpanel" aria-labelledby="tab-hash"
+               data-view="hash" hidden>
+        <div class="workspace">
+          <!-- 左侧控制区：关键字规模、桶数量、目标值、播放速度 -->
+          <aside class="controls" aria-labelledby="hash-controls-title">
             <div class="section-heading">
-              <h2 id="trace-title">查找轨迹</h2>
-              <span id="trace-count" class="trace-count">共 1 步</span>
+              <h2 id="hash-controls-title">演示设置</h2>
+              <span class="sorted-badge chain-badge">链地址法</span>
             </div>
-            <ol id="trace-list" class="trace-list" aria-label="二分查找步骤列表"></ol>
+
+            <div class="field">
+              <div class="field-head">
+                <label for="hash-size">关键字数量</label>
+                <output id="hash-size-value" for="hash-size">8</output>
+              </div>
+              <input id="hash-size" class="range" type="range" min="6" max="16" step="1" value="8"
+                     aria-describedby="hash-size-hint">
+              <p id="hash-size-hint" class="hint">6–16 个互不相同的整数，按随机顺序依次插入哈希表。</p>
+            </div>
+
+            <div class="field">
+              <div class="field-head">
+                <label for="hash-bucket-count">桶数量 m</label>
+                <output id="hash-bucket-count-value" for="hash-bucket-count">5</output>
+              </div>
+              <input id="hash-bucket-count" class="range" type="range" min="4" max="12" step="1" value="5"
+                     aria-describedby="hash-bucket-hint">
+              <p id="hash-bucket-hint" class="hint">4–12 个桶；装载因子 α = n / m 超过 0.75 时自动扩容。</p>
+            </div>
+
+            <div class="field">
+              <label for="hash-target">目标值</label>
+              <div class="target-row">
+                <input id="hash-target" type="number" step="1" inputmode="numeric"
+                       aria-describedby="hash-target-hint">
+                <button id="hash-random-target" class="btn btn-quiet" type="button">随机目标</button>
+              </div>
+              <p id="hash-target-hint" class="hint">默认从关键字中随机选取；也可以输入不存在的值。</p>
+            </div>
+
+            <div class="field">
+              <span class="field-label">播放速度</span>
+              <div class="segmented" id="hash-speed-group" role="group" aria-label="播放速度">
+                <button type="button" data-speed="1200" aria-pressed="false">慢</button>
+                <button type="button" data-speed="700" class="is-selected" aria-pressed="true">正常</button>
+                <button type="button" data-speed="350" aria-pressed="false">快</button>
+              </div>
+            </div>
+
+            <div class="side-actions">
+              <button id="hash-regenerate" class="btn btn-outline" type="button">换一组关键字</button>
+              <button id="hash-reset" class="btn btn-outline" type="button">重置演示</button>
+            </div>
+
+            <div class="shortcuts">
+              <h3>键盘快捷键</h3>
+              <p><kbd>空格</kbd> 播放 / 暂停</p>
+              <p><kbd>←</kbd><kbd>→</kbd> 单步前后</p>
+              <p><kbd>R</kbd> 重置</p>
+            </div>
+          </aside>
+
+          <!-- 中部主区域：哈希计算、桶数组与冲突链 -->
+          <section class="stage-column" aria-labelledby="hash-stage-title">
+            <div class="stage">
+              <div class="stage-heading">
+                <div>
+                  <h2 id="hash-stage-title">哈希查找</h2>
+                  <p class="stage-sub">先算桶位，再沿冲突链逐个比较。</p>
+                </div>
+                <p class="formula" aria-label="哈希函数的计算公式">h(k) = k mod m</p>
+              </div>
+
+              <div class="hash-calc">
+                <div class="calc-flow">
+                  <span class="calc-chip calc-key" id="hash-calc-key">k = –</span>
+                  <span class="calc-op" aria-hidden="true">→</span>
+                  <span class="calc-chip calc-formula" id="hash-calc-formula">k mod m</span>
+                  <span class="calc-op" aria-hidden="true">→</span>
+                  <span class="calc-chip calc-bucket" id="hash-calc-bucket">桶 –</span>
+                </div>
+                <p class="calc-note" id="hash-calc-note">等待开始：先插入关键字建表，再查找目标。</p>
+              </div>
+
+              <div class="hash-frame">
+                <div class="array-caption hash-caption">
+                  <span>桶数组</span>
+                  <span id="hash-table-meta">m = 5</span>
+                  <span id="hash-stored-meta">已存 0 / 8 个</span>
+                  <span class="target-meta">目标 <b id="hash-target-meta">–</b></span>
+                </div>
+
+                <div class="load-meter">
+                  <div class="load-meter-head">
+                    <span>装载因子 α = n / m</span>
+                    <b id="hash-load-factor">0.00</b>
+                  </div>
+                  <div class="load-track" role="img" aria-label="装载因子进度条与 0.75 扩容阈值">
+                    <span id="hash-load-bar" class="load-bar"></span>
+                    <i class="load-threshold" aria-hidden="true"></i>
+                  </div>
+                  <p id="hash-load-hint" class="hint">扩容阈值 α = 0.75，超过后自动触发 rehash。</p>
+                </div>
+
+                <div id="hash-bucket-viewport" class="hash-bucket-viewport" tabindex="0"
+                     role="region" aria-label="可滚动的哈希桶列表">
+                  <div id="hash-bucket-list" class="hash-bucket-list" role="list"
+                       aria-label="哈希桶与冲突链"></div>
+                </div>
+              </div>
+
+              <div id="hash-status-panel" class="status-panel" data-tone="idle">
+                <span class="status-dot" aria-hidden="true"></span>
+                <p id="hash-status-message" role="status" aria-live="polite">正在准备哈希表…</p>
+                <span id="hash-status-count" class="status-count">比较 0 次</span>
+              </div>
+
+              <div class="transport">
+                <div class="transport-actions">
+                  <button id="hash-prev" class="btn btn-outline" type="button" disabled>上一步</button>
+                  <button id="hash-step" class="btn btn-outline" type="button">单步</button>
+                  <button id="hash-play" class="btn btn-primary" type="button" aria-pressed="false">播放</button>
+                </div>
+                <p class="transport-meta">
+                  <span>第 <b id="hash-step-counter">1 / 1</b> 步</span>
+                  <span>桶数 <b id="hash-bucket-readout">m = 5</b></span>
+                </p>
+              </div>
+              <div class="progress" aria-hidden="true"><span id="hash-progress-bar"></span></div>
+            </div>
+
+            <div class="lower-grid">
+              <section class="stats" aria-labelledby="hash-stats-title">
+                <div class="section-heading">
+                  <h2 id="hash-stats-title">本次统计</h2>
+                  <span id="hash-stat-verdict" class="verdict">准备就绪</span>
+                </div>
+                <dl class="stat-list">
+                  <div>
+                    <dt>比较次数</dt>
+                    <dd id="hash-stat-comparisons">0</dd>
+                  </div>
+                  <div>
+                    <dt>装载因子</dt>
+                    <dd id="hash-stat-load">0.00</dd>
+                  </div>
+                  <div>
+                    <dt>扩容次数</dt>
+                    <dd id="hash-stat-rehash">0</dd>
+                  </div>
+                  <div>
+                    <dt>当前桶数</dt>
+                    <dd id="hash-stat-buckets">5</dd>
+                  </div>
+                  <div>
+                    <dt>最长冲突链</dt>
+                    <dd id="hash-stat-chain">0</dd>
+                  </div>
+                  <div>
+                    <dt>结果 / 状态</dt>
+                    <dd id="hash-stat-result">—</dd>
+                  </div>
+                </dl>
+              </section>
+
+              <section class="trace" aria-labelledby="hash-trace-title">
+                <div class="section-heading">
+                  <h2 id="hash-trace-title">查找轨迹</h2>
+                  <span id="hash-trace-count" class="trace-count">共 1 步</span>
+                </div>
+                <ol id="hash-trace-list" class="trace-list" aria-label="哈希查找步骤列表"></ol>
+              </section>
+            </div>
           </section>
         </div>
       </section>
@@ -156,15 +360,19 @@
 
     <footer class="page-footer">
       <span>纯 HTML / CSS / JavaScript · 无外部依赖</span>
-      <span>数组下标从 0 开始 · 目标不存在时 low 会越过 high</span>
+      <span>二分查找：下标从 0 开始 · 哈希查找：h(k) = k mod m，冲突用链地址法</span>
     </footer>
   </div>
 
   <!-- 按依赖顺序加载普通脚本，保证双击 index.html 即可运行（无需本地服务器） -->
   <script src="js/binary-search.js"></script>
+  <script src="js/hash-table.js"></script>
   <script src="js/renderer.js"></script>
   <script src="js/stats.js"></script>
   <script src="js/controls.js"></script>
+  <script src="js/hash-renderer.js"></script>
+  <script src="js/views.js"></script>
   <script src="js/main.js"></script>
+  <script src="js/hash-main.js"></script>
 </body>
 </html>

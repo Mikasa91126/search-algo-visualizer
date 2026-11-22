@@ -1186,3 +1186,551 @@ kbd {
     scroll-behavior: auto !important;
   }
 }
+
+/* ==========================================================================
+   哈希查找模块 · 模块标签页、哈希计算、桶数组与冲突链
+   沿用二分查找的方格纸与测量仪器语言：蓝=当前桶，橙=冲突/比较，
+   绿=命中，红=超过阈值或查找失败。
+   ========================================================================== */
+
+/* ---------- 模块标签页 ---------- */
+
+.view-tabs {
+  display: flex;
+  margin-top: 20px;
+  border-bottom: 2px solid var(--ink);
+}
+
+.view-tab {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px 11px;
+  border: 1px solid var(--line-strong);
+  border-bottom: 0;
+  background: var(--paper-2);
+  color: var(--ink-soft);
+  text-align: left;
+  transition: background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+}
+
+.view-tab + .view-tab {
+  margin-left: -1px;
+}
+
+.view-tab:hover {
+  background: var(--blue-wash);
+  color: var(--ink);
+}
+
+.view-tab.is-active {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper-3);
+}
+
+.view-tab-no {
+  align-self: flex-start;
+  padding-top: 4px;
+  color: var(--line-strong);
+  font-family: var(--mono);
+  font-size: 10px;
+  line-height: 1;
+}
+
+.view-tab.is-active .view-tab-no {
+  color: #b9c4bd;
+}
+
+.view-tab-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.view-tab-label {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.view-tab-note {
+  color: var(--muted);
+  font-size: 10.5px;
+  line-height: 1.5;
+}
+
+.view-tab.is-active .view-tab-note {
+  color: #c5cec8;
+}
+
+.view-panel[hidden] {
+  display: none;
+}
+
+.views {
+  display: block;
+}
+
+.chain-badge {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+/* ---------- 哈希计算卡片 ---------- */
+
+.hash-calc {
+  display: grid;
+  gap: 7px;
+  margin: 14px 20px 0;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--blue);
+  background: var(--blue-wash);
+}
+
+.calc-flow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.calc-chip {
+  padding: 3px 8px;
+  border: 1px solid var(--line-strong);
+  background: var(--paper-3);
+  color: var(--ink-soft);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.calc-key {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.calc-formula {
+  color: var(--ink);
+}
+
+.calc-bucket {
+  border-color: var(--line-strong);
+  background: var(--paper-3);
+  color: var(--ink-soft);
+  font-weight: 700;
+}
+
+.calc-bucket.is-active {
+  border-color: var(--blue);
+  background: var(--blue);
+  color: #fff;
+}
+
+.calc-bucket.is-warn {
+  border-color: var(--orange-deep);
+  background: var(--orange);
+  color: #fff;
+}
+
+.calc-bucket.is-found {
+  border-color: #18543b;
+  background: var(--green);
+  color: #fff;
+}
+
+.calc-bucket.is-failed {
+  border-color: var(--red);
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.calc-op {
+  color: var(--line-strong);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.calc-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+
+/* ---------- 桶数组与冲突链 ---------- */
+
+.hash-frame {
+  margin-top: 14px;
+  padding: 16px 20px 18px;
+  border-top: 1px solid var(--line);
+  background:
+    linear-gradient(rgba(43, 95, 138, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(43, 95, 138, 0.04) 1px, transparent 1px),
+    var(--paper-3);
+  background-size: 22px 22px;
+}
+
+.hash-caption {
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.load-meter {
+  margin-bottom: 12px;
+  padding: 8px 10px 7px;
+  border: 1px solid var(--line);
+  background: var(--paper-3);
+}
+
+.load-meter-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.load-meter-head b {
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.load-track {
+  position: relative;
+  height: 8px;
+  margin-top: 7px;
+  border: 1px solid var(--line);
+  background: #dfe3da;
+  overflow: visible;
+}
+
+.load-bar {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--blue);
+  transition: width 0.24s ease, background-color 0.24s ease;
+}
+
+.load-bar.is-high {
+  background: var(--orange);
+}
+
+.load-bar.is-over {
+  background: var(--red);
+}
+
+.load-threshold {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  left: 75%;
+  width: 2px;
+  background: var(--ink);
+}
+
+.load-threshold::after {
+  content: "0.75";
+  position: absolute;
+  right: 4px;
+  top: -17px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 9px;
+  font-style: normal;
+  white-space: nowrap;
+}
+
+.load-meter .hint {
+  margin-top: 7px;
+  font-size: 10.5px;
+}
+
+.load-meter .hint.is-over {
+  color: var(--red);
+  font-weight: 600;
+}
+
+.hash-bucket-viewport {
+  max-height: 500px;
+  padding: 3px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  background: var(--paper-3);
+  scrollbar-color: var(--line-strong) transparent;
+  scrollbar-width: thin;
+}
+
+.hash-bucket-viewport::-webkit-scrollbar {
+  width: 8px;
+}
+
+.hash-bucket-viewport::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+}
+
+.hash-bucket-viewport::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.hash-bucket-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 100%;
+}
+
+.bucket-row {
+  display: grid;
+  grid-template-columns: 46px 14px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  background: var(--paper-3);
+  transition: border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.bucket-index {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.bucket-connector {
+  color: var(--line-strong);
+  font-family: var(--mono);
+  font-size: 11px;
+  text-align: center;
+}
+
+.bucket-chain {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-height: 28px;
+}
+
+.chain-node {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--line-strong);
+  background: #fffefa;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.chain-node.is-active {
+  border-color: var(--orange-deep);
+  background: var(--orange);
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.chain-node.is-found {
+  border-color: #18543b;
+  background: var(--green);
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.chain-node.is-new {
+  animation: chain-node-in 0.25s ease-out;
+}
+
+.chain-arrow {
+  color: var(--line-strong);
+  font-family: var(--mono);
+  font-size: 10px;
+}
+
+.chain-empty {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.chain-empty::before {
+  content: "— ";
+  color: var(--line-strong);
+}
+
+.bucket-flag {
+  margin-left: auto;
+  padding: 1px 6px;
+  border: 1px solid var(--orange-deep);
+  color: var(--orange-deep);
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.bucket-flag.is-found {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.bucket-flag.is-failed {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.bucket-row.is-active {
+  border-color: var(--blue);
+  background: var(--blue-wash);
+  box-shadow: inset 3px 0 0 var(--blue);
+}
+
+.bucket-row.is-conflict {
+  border-color: var(--orange-deep);
+  background: #fdf4ee;
+  box-shadow: inset 3px 0 0 var(--orange);
+}
+
+.bucket-row.is-comparing {
+  border-color: var(--orange);
+  background: #fdf4ee;
+  box-shadow: inset 3px 0 0 var(--orange);
+}
+
+.bucket-row.is-found {
+  border-color: var(--green);
+  background: var(--green-soft);
+  box-shadow: inset 3px 0 0 var(--green);
+}
+
+.bucket-row.is-failed {
+  border-color: var(--red);
+  background: var(--red-soft);
+  box-shadow: inset 3px 0 0 var(--red);
+}
+
+.status-panel[data-tone="warn"] {
+  border-left-color: var(--orange-deep);
+  background: #fdf1e9;
+}
+
+.status-panel[data-tone="warn"] .status-dot {
+  background: var(--orange-deep);
+}
+
+/* ---------- 哈希模块响应式 ---------- */
+@media (max-width: 900px) {
+  .view-tab {
+    flex: 1 1 0;
+  }
+
+  .hash-calc {
+    margin: 12px 12px 0;
+  }
+
+  .hash-frame {
+    padding: 14px 12px 16px;
+  }
+
+  .hash-bucket-viewport {
+    max-height: 400px;
+  }
+}
+
+@media (max-width: 640px) {
+  .view-tabs {
+    margin-top: 14px;
+  }
+
+  .view-tab {
+    gap: 8px;
+    padding: 9px 10px 10px;
+  }
+
+  .view-tab-no {
+    display: none;
+  }
+
+  .view-tab-label {
+    font-size: 17px;
+  }
+
+  .view-tab-note {
+    font-size: 9.5px;
+  }
+
+  .hash-calc {
+    margin: 10px 12px 0;
+    padding: 9px 10px;
+  }
+
+  .calc-flow {
+    gap: 5px;
+  }
+
+  .calc-chip {
+    padding: 2px 6px;
+    font-size: 10.5px;
+  }
+
+  .calc-note {
+    font-size: 10.5px;
+  }
+
+  .hash-frame {
+    padding: 12px 12px 14px;
+  }
+
+  .bucket-row {
+    grid-template-columns: 34px 10px minmax(0, 1fr);
+    gap: 5px;
+    padding: 4px 6px;
+  }
+
+  .bucket-index {
+    font-size: 10px;
+  }
+
+  .chain-node {
+    min-width: 38px;
+    height: 26px;
+    padding: 0 6px;
+    font-size: 12px;
+  }
+
+  .bucket-flag {
+    margin-left: 2px;
+  }
+
+  .hash-bucket-viewport {
+    max-height: 340px;
+  }
+}
+
+@keyframes chain-node-in {
+  from {
+    opacity: 0;
+    transform: translateY(-5px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
