@@ -132,6 +132,11 @@
       els.binaryViewport.scrollLeft = 0;
       return;
     }
+    // 面板隐藏时尺寸为 0，先清空记录，等面板可见后的重绘再滚动。
+    if (!els.binaryViewport.clientWidth) {
+      lastBinaryMid = null;
+      return;
+    }
     if (step.mid === null || step.mid === lastBinaryMid) {
       return;
     }
