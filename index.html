@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="搜索算法可视化学习工具：逐步观察二分查找的区间折半，以及哈希表（取模哈希 + 链地址法）的建表、冲突与查找过程。">
+  <meta name="description" content="搜索算法可视化学习工具：逐步观察二分查找的区间折半、哈希表（取模哈希 + 链地址法）的建表与查找，并在对比模式中同步比较两者。">
   <title>二分查找可视化 · 搜索算法学习工具</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -18,7 +18,7 @@
       </div>
       <div class="masthead-meta">
         <p><span>项目</span>二分查找 vs 哈希查找</p>
-        <p><span>进度</span>第二阶段 · 二分查找 + 哈希查找</p>
+        <p><span>进度</span>第三阶段 · 对比模式与统计</p>
         <p><span>运行</span>纯原生页面 · 双击即用</p>
       </div>
     </header>
@@ -39,6 +39,14 @@
         <span class="view-tab-body">
           <span class="view-tab-label">哈希查找</span>
           <span class="view-tab-note">取模定位 · 链地址法</span>
+        </span>
+      </button>
+      <button id="tab-compare" class="view-tab" type="button" role="tab"
+              aria-selected="false" aria-controls="view-compare" data-view="compare" tabindex="-1">
+        <span class="view-tab-no" aria-hidden="true">03</span>
+        <span class="view-tab-body">
+          <span class="view-tab-label">对比模式</span>
+          <span class="view-tab-note">同数据 · 同步双栏</span>
         </span>
       </button>
     </nav>
@@ -356,23 +364,263 @@
           </section>
         </div>
       </section>
+
+      <!-- ================= 对比模式 ================= -->
+      <section id="view-compare" class="view-panel" role="tabpanel" aria-labelledby="tab-compare"
+               data-view="compare" hidden>
+        <div class="compare-workspace">
+          <!-- 左侧控制区：左右两侧共用同一组数据与目标值 -->
+          <aside class="controls" aria-labelledby="compare-controls-title">
+            <div class="section-heading">
+              <h2 id="compare-controls-title">对比设置</h2>
+              <span class="sorted-badge compare-badge">同一数据 · 同一目标</span>
+            </div>
+
+            <div class="field">
+              <div class="field-head">
+                <label for="compare-size">数据规模</label>
+                <output id="compare-size-value" for="compare-size">12</output>
+              </div>
+              <input id="compare-size" class="range" type="range" min="8" max="24" step="1" value="12"
+                     aria-describedby="compare-size-hint">
+              <p id="compare-size-hint" class="hint">8–24 个互不相同的整数；同一组数据同时用于左右两侧。</p>
+            </div>
+
+            <div class="field">
+              <label for="compare-target">目标值</label>
+              <div class="target-row">
+                <input id="compare-target" type="number" step="1" inputmode="numeric"
+                       aria-describedby="compare-target-hint">
+                <button id="compare-random-target" class="btn btn-quiet" type="button">随机目标</button>
+              </div>
+              <p id="compare-target-hint" class="hint">左右两侧使用同一个目标值；输入不存在的整数可以观察双方失败的过程。</p>
+            </div>
+
+            <div class="field">
+              <span class="field-label">播放速度</span>
+              <div class="segmented" id="compare-speed-group" role="group" aria-label="对比模式播放速度">
+                <button type="button" data-speed="1200" aria-pressed="false">慢</button>
+                <button type="button" data-speed="700" class="is-selected" aria-pressed="true">正常</button>
+                <button type="button" data-speed="350" aria-pressed="false">快</button>
+              </div>
+            </div>
+
+            <div class="side-actions">
+              <button id="compare-regenerate" class="btn btn-outline" type="button">换一组数据</button>
+              <button id="compare-reset" class="btn btn-outline" type="button">重置演示</button>
+            </div>
+
+            <div class="shortcuts">
+              <h3>键盘快捷键</h3>
+              <p><kbd>空格</kbd> 播放 / 暂停</p>
+              <p><kbd>←</kbd><kbd>→</kbd> 单步前后</p>
+              <p><kbd>R</kbd> 重置</p>
+            </div>
+          </aside>
+
+          <!-- 双栏画布与同步播放控制 -->
+          <section class="compare-stage-column" aria-labelledby="compare-stage-title">
+            <div class="compare-stage">
+              <div class="compare-head">
+                <div>
+                  <h2 id="compare-stage-title">对比模式</h2>
+                  <p class="stage-sub">同一组数据、同一个目标值，左右两侧同步推进。</p>
+                </div>
+                <p class="compare-shared">
+                  目标 <b id="compare-target-meta">–</b>
+                  <span>·</span> n = <b id="compare-size-meta">12</b>
+                  <span>·</span> 桶数 m = <b id="compare-bucket-meta">17</b>
+                </p>
+              </div>
+
+              <div class="compare-grid">
+                <!-- 左栏：二分查找 -->
+                <article class="compare-pane" data-side="binary" aria-labelledby="compare-binary-title">
+                  <div class="compare-pane-head">
+                    <div>
+                      <h3 id="compare-binary-title">二分查找</h3>
+                      <p class="compare-pane-sub">有序数组 · 区间折半</p>
+                    </div>
+                    <span class="compare-complexity">O(log n)</span>
+                  </div>
+
+                  <div class="compare-array-frame">
+                    <div class="array-caption compare-caption">
+                      <span>数组 A<em>升序</em></span>
+                      <span>low / mid / high 指针</span>
+                    </div>
+                    <div id="compare-binary-viewport" class="compare-array-viewport" tabindex="0"
+                         role="group" aria-label="对比模式中的二分查找数组">
+                      <div id="compare-binary-track" class="array-track" role="list"
+                           aria-label="有序数组"></div>
+                    </div>
+                  </div>
+
+                  <div id="compare-binary-status" class="compare-status" data-tone="idle">
+                    <span class="status-dot" aria-hidden="true"></span>
+                    <p id="compare-binary-status-message" role="status" aria-live="polite">准备开始…</p>
+                    <span id="compare-binary-status-count" class="status-count">比较 0 次</span>
+                  </div>
+
+                  <p class="compare-meta">
+                    <span>步骤 <b id="compare-binary-step">1 / 1</b></span>
+                    <span>区间 <b id="compare-binary-interval">[0, 11]</b></span>
+                    <span>结果 <b id="compare-binary-result">—</b></span>
+                  </p>
+                </article>
+
+                <!-- 右栏：哈希查找 -->
+                <article class="compare-pane" data-side="hash" aria-labelledby="compare-hash-title">
+                  <div class="compare-pane-head">
+                    <div>
+                      <h3 id="compare-hash-title">哈希查找</h3>
+                      <p class="compare-pane-sub">取模定位 · 链地址法</p>
+                    </div>
+                    <span class="compare-complexity">O(1) 平均</span>
+                  </div>
+
+                  <div class="compare-hash-frame">
+                    <div class="array-caption compare-caption">
+                      <span>桶数组</span>
+                      <span id="compare-hash-bucket-readout">m = 17</span>
+                      <span>冲突链</span>
+                    </div>
+                    <div id="compare-hash-viewport" class="compare-bucket-viewport" tabindex="0"
+                         role="region" aria-label="对比模式中的哈希桶列表">
+                      <div id="compare-hash-list" class="hash-bucket-list" role="list"
+                           aria-label="哈希桶与冲突链"></div>
+                    </div>
+                  </div>
+
+                  <div id="compare-hash-status" class="compare-status" data-tone="idle">
+                    <span class="status-dot" aria-hidden="true"></span>
+                    <p id="compare-hash-status-message" role="status" aria-live="polite">准备开始…</p>
+                    <span id="compare-hash-status-count" class="status-count">比较 0 次</span>
+                  </div>
+
+                  <p class="compare-meta">
+                    <span>步骤 <b id="compare-hash-step">1 / 1</b></span>
+                    <span>桶数 <b id="compare-hash-bucket-meta">m = 17</b></span>
+                    <span>结果 <b id="compare-hash-result">—</b></span>
+                  </p>
+                </article>
+              </div>
+
+              <div class="transport compare-transport">
+                <div class="transport-actions">
+                  <button id="compare-prev" class="btn btn-outline" type="button" disabled>上一步</button>
+                  <button id="compare-step" class="btn btn-outline" type="button">单步</button>
+                  <button id="compare-play" class="btn btn-primary" type="button" aria-pressed="false">播放</button>
+                </div>
+                <p class="transport-meta">
+                  <span>同步帧 <b id="compare-step-counter">1 / 1</b></span>
+                  <span id="compare-sync-readout">二分 1/1 步 · 哈希 1/1 步</span>
+                </p>
+              </div>
+              <div class="progress" aria-hidden="true"><span id="compare-progress-bar"></span></div>
+            </div>
+
+            <div class="compare-lower">
+              <!-- 统计对比 -->
+              <section class="compare-stats" aria-labelledby="compare-stats-title">
+                <div class="section-heading">
+                  <h2 id="compare-stats-title">统计对比</h2>
+                  <span id="compare-stat-verdict" class="verdict">准备就绪</span>
+                </div>
+
+                <table class="compare-table" aria-label="二分查找与哈希查找的统计对比">
+                  <thead>
+                    <tr>
+                      <th scope="col">指标</th>
+                      <th scope="col">二分查找</th>
+                      <th scope="col">哈希查找</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">比较次数</th>
+                      <td id="compare-stat-binary-comparisons">0</td>
+                      <td id="compare-stat-hash-comparisons">0</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">时间复杂度（理论）</th>
+                      <td>O(log n)</td>
+                      <td>O(1) 平均</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">前置构建成本</th>
+                      <td>O(n log n) · 排序</td>
+                      <td>O(n) · 建表</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">当前构建详情</th>
+                      <td id="compare-binary-build">—</td>
+                      <td id="compare-hash-build">—</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">查找结果</th>
+                      <td id="compare-stat-binary-result">—</td>
+                      <td id="compare-stat-hash-result">—</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div class="compare-bars" role="img"
+                     aria-label="二分查找与哈希查找的比较次数柱状对比图">
+                  <div class="compare-bar-row">
+                    <span class="compare-bar-label">二分查找</span>
+                    <div class="compare-bar-track"><span id="compare-bar-binary"></span></div>
+                    <b id="compare-bar-binary-value">0</b>
+                  </div>
+                  <div class="compare-bar-row is-hash">
+                    <span class="compare-bar-label">哈希查找</span>
+                    <div class="compare-bar-track"><span id="compare-bar-hash"></span></div>
+                    <b id="compare-bar-hash-value">0</b>
+                  </div>
+                </div>
+
+                <p id="compare-conclusion" class="compare-conclusion" data-tone="idle">
+                  点击「播放」或「单步」开始：同一组数据、同一个目标值，左右两侧同步推进并实时累计比较次数。
+                </p>
+              </section>
+
+              <!-- 读图说明 -->
+              <aside class="compare-notes" aria-labelledby="compare-notes-title">
+                <div class="section-heading">
+                  <h2 id="compare-notes-title">怎么读</h2>
+                  <span class="trace-count">口径说明</span>
+                </div>
+                <ul>
+                  <li><b>比较次数</b>：二分统计与中点的比较；哈希只统计冲突链内的元素比较，另有 1 次哈希定位不计入比较次数。</li>
+                  <li><b>理论复杂度</b>：二分查找 O(log n)；哈希查找平均 O(1)，最坏情况下所有关键字落入同一条链，退化为 O(n)。</li>
+                  <li><b>构建成本</b>：二分查找要求有序数组，前置排序为 O(n log n)；哈希表逐个插入建表为 O(n)。</li>
+                  <li><b>同步播放</b>：一次播放同时驱动两侧；两侧步骤数不同，先结束的一侧停在终态等待另一侧。</li>
+                </ul>
+              </aside>
+            </div>
+          </section>
+        </div>
+      </section>
     </main>
 
     <footer class="page-footer">
       <span>纯 HTML / CSS / JavaScript · 无外部依赖</span>
-      <span>二分查找：下标从 0 开始 · 哈希查找：h(k) = k mod m，冲突用链地址法</span>
+      <span>二分查找：下标从 0 开始 · 哈希查找：h(k) = k mod m，冲突用链地址法 · 对比模式：同一数据同步双栏</span>
     </footer>
   </div>
 
   <!-- 按依赖顺序加载普通脚本，保证双击 index.html 即可运行（无需本地服务器） -->
   <script src="js/binary-search.js"></script>
   <script src="js/hash-table.js"></script>
+  <script src="js/compare-model.js"></script>
   <script src="js/renderer.js"></script>
   <script src="js/stats.js"></script>
   <script src="js/controls.js"></script>
   <script src="js/hash-renderer.js"></script>
+  <script src="js/compare-renderer.js"></script>
   <script src="js/views.js"></script>
   <script src="js/main.js"></script>
   <script src="js/hash-main.js"></script>
+  <script src="js/compare-main.js"></script>
 </body>
 </html>
