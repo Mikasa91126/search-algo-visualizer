@@ -336,8 +336,18 @@
       }
     });
 
-    // 键盘快捷键：在输入框或按钮上时不拦截，避免和原生操作冲突。
+    // 切到哈希查找时暂停二分演示，避免隐藏面板继续跑动画。
+    document.addEventListener('app:viewchange', function (event) {
+      if (event.detail && event.detail.view !== 'binary' && playback) {
+        playback.pause();
+      }
+    });
+
+    // 键盘快捷键：只在二分查找面板可见时生效；在输入框或按钮上不拦截。
     document.addEventListener('keydown', function (event) {
+      if (window.AppViews && !window.AppViews.isActive('binary')) {
+        return;
+      }
       if (event.metaKey || event.ctrlKey || event.altKey) {
         return;
       }
