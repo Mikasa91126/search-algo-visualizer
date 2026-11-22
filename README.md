@@ -157,7 +157,7 @@ search-algo-visualizer/
 | [#4](https://github.com/Mikasa91126/search-algo-visualizer/pull/4) | feat(ui): 二分查找可视化页面与逐步动画 | `agent/binary-search-ui-skeleton-89b3f1c4354f` | 已合并 |
 | [#6](https://github.com/Mikasa91126/search-algo-visualizer/pull/6) | feat(ui): 哈希表可视化模块（哈希函数 + 链地址法） | `agent/hash-table-visualizer-d9c2a2c2450e` | 已合并 |
 | [#8](https://github.com/Mikasa91126/search-algo-visualizer/pull/8) | feat(ui): 并排对比模式与性能统计面板 | `agent/compare-mode-stats-2d37bed74e87` | 已合并 |
-| 本次收尾 PR | docs: 完善 README、MIT LICENSE 与 AI 结对编程记录 | `agent/readme-license-logs-3b8def32e025` | 审查合并中 |
+| [#10](https://github.com/Mikasa91126/search-algo-visualizer/pull/10) | docs: 完善 README、MIT LICENSE 与 AI 结对编程记录 | `agent/readme-license-logs-3b8def32e025` | 审查合并中 |
 
 ### 协作流程
 
