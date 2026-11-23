@@ -78,7 +78,8 @@
               <div class="target-row">
                 <input id="target" type="number" step="1" inputmode="numeric"
                        aria-describedby="target-hint">
-                <button id="random-target" class="btn btn-quiet" type="button">随机目标</button>
+                <button id="random-target" class="btn btn-quiet" type="button"
+                        aria-label="随机生成目标值">随机目标</button>
               </div>
               <p id="target-hint" class="hint">输入任意整数；也可以输入数组中不存在的值，观察查找失败的过程。</p>
             </div>
@@ -93,8 +94,10 @@
             </div>
 
             <div class="side-actions">
-              <button id="regenerate" class="btn btn-outline" type="button">换一组数据</button>
-              <button id="reset" class="btn btn-outline" type="button">重置演示</button>
+              <button id="regenerate" class="btn btn-outline" type="button"
+                      aria-label="换一组数据：重新生成随机有序数组">换一组数据</button>
+              <button id="reset" class="btn btn-outline" type="button"
+                      aria-label="重置二分查找演示到第一步">重置演示</button>
             </div>
 
             <div class="shortcuts">
@@ -135,9 +138,12 @@
 
               <div class="transport">
                 <div class="transport-actions">
-                  <button id="prev" class="btn btn-outline" type="button" disabled>上一步</button>
-                  <button id="step" class="btn btn-outline" type="button">单步</button>
-                  <button id="play" class="btn btn-primary" type="button" aria-pressed="false">播放</button>
+                  <button id="prev" class="btn btn-outline" type="button" disabled
+                          aria-label="上一步：回看上一个查找步骤">上一步</button>
+                  <button id="step" class="btn btn-outline" type="button"
+                          aria-label="单步：执行下一个查找步骤">单步</button>
+                  <button id="play" class="btn btn-primary" type="button" aria-pressed="false"
+                          aria-label="播放自动演示">播放</button>
                 </div>
                 <p class="transport-meta">
                   <span>第 <b id="step-counter">1 / 1</b> 步</span>
@@ -223,7 +229,8 @@
               <div class="target-row">
                 <input id="hash-target" type="number" step="1" inputmode="numeric"
                        aria-describedby="hash-target-hint">
-                <button id="hash-random-target" class="btn btn-quiet" type="button">随机目标</button>
+                <button id="hash-random-target" class="btn btn-quiet" type="button"
+                        aria-label="随机生成目标值">随机目标</button>
               </div>
               <p id="hash-target-hint" class="hint">默认从关键字中随机选取；也可以输入不存在的值。</p>
             </div>
@@ -238,8 +245,10 @@
             </div>
 
             <div class="side-actions">
-              <button id="hash-regenerate" class="btn btn-outline" type="button">换一组关键字</button>
-              <button id="hash-reset" class="btn btn-outline" type="button">重置演示</button>
+              <button id="hash-regenerate" class="btn btn-outline" type="button"
+                      aria-label="换一组关键字：重新生成随机哈希数据">换一组关键字</button>
+              <button id="hash-reset" class="btn btn-outline" type="button"
+                      aria-label="重置哈希查找演示到第一步">重置演示</button>
             </div>
 
             <div class="shortcuts">
@@ -307,9 +316,12 @@
 
               <div class="transport">
                 <div class="transport-actions">
-                  <button id="hash-prev" class="btn btn-outline" type="button" disabled>上一步</button>
-                  <button id="hash-step" class="btn btn-outline" type="button">单步</button>
-                  <button id="hash-play" class="btn btn-primary" type="button" aria-pressed="false">播放</button>
+                  <button id="hash-prev" class="btn btn-outline" type="button" disabled
+                          aria-label="上一步：回看上一个演示步骤">上一步</button>
+                  <button id="hash-step" class="btn btn-outline" type="button"
+                          aria-label="单步：执行下一个演示步骤">单步</button>
+                  <button id="hash-play" class="btn btn-primary" type="button" aria-pressed="false"
+                          aria-label="播放自动演示">播放</button>
                 </div>
                 <p class="transport-meta">
                   <span>第 <b id="hash-step-counter">1 / 1</b> 步</span>
@@ -391,7 +403,8 @@
               <div class="target-row">
                 <input id="compare-target" type="number" step="1" inputmode="numeric"
                        aria-describedby="compare-target-hint">
-                <button id="compare-random-target" class="btn btn-quiet" type="button">随机目标</button>
+                <button id="compare-random-target" class="btn btn-quiet" type="button"
+                        aria-label="随机生成目标值">随机目标</button>
               </div>
               <p id="compare-target-hint" class="hint">左右两侧使用同一个目标值；输入不存在的整数可以观察双方失败的过程。</p>
             </div>
@@ -406,8 +419,10 @@
             </div>
 
             <div class="side-actions">
-              <button id="compare-regenerate" class="btn btn-outline" type="button">换一组数据</button>
-              <button id="compare-reset" class="btn btn-outline" type="button">重置演示</button>
+              <button id="compare-regenerate" class="btn btn-outline" type="button"
+                      aria-label="换一组数据：重新生成对比模式的随机数据">换一组数据</button>
+              <button id="compare-reset" class="btn btn-outline" type="button"
+                      aria-label="重置对比演示到第一帧">重置演示</button>
             </div>
 
             <div class="shortcuts">
@@ -508,9 +523,12 @@
 
               <div class="transport compare-transport">
                 <div class="transport-actions">
-                  <button id="compare-prev" class="btn btn-outline" type="button" disabled>上一步</button>
-                  <button id="compare-step" class="btn btn-outline" type="button">单步</button>
-                  <button id="compare-play" class="btn btn-primary" type="button" aria-pressed="false">播放</button>
+                  <button id="compare-prev" class="btn btn-outline" type="button" disabled
+                          aria-label="上一步：回看上一个同步帧">上一步</button>
+                  <button id="compare-step" class="btn btn-outline" type="button"
+                          aria-label="单步：执行下一个同步帧">单步</button>
+                  <button id="compare-play" class="btn btn-primary" type="button" aria-pressed="false"
+                          aria-label="播放自动演示">播放</button>
                 </div>
                 <p class="transport-meta">
                   <span>同步帧 <b id="compare-step-counter">1 / 1</b></span>
