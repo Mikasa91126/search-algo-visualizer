@@ -205,12 +205,15 @@
     if (playbackState.playing) {
       els.play.textContent = '暂停';
       els.play.setAttribute('aria-pressed', 'true');
+      els.play.setAttribute('aria-label', '暂停自动演示');
     } else if (playbackState.atEnd) {
       els.play.textContent = '重播';
       els.play.setAttribute('aria-pressed', 'false');
+      els.play.setAttribute('aria-label', '重新播放演示');
     } else {
       els.play.textContent = '播放';
       els.play.setAttribute('aria-pressed', 'false');
+      els.play.setAttribute('aria-label', '播放自动演示');
     }
   }
 
